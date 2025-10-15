@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse Aviator Casino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for additional styling */
+        .bg-gradient {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        .chart-container {
+            height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-gradient text-white">
+    <div class="container mx-auto p-8">
+        <h1 class="text-4xl font-bold text-center mb-8">Analyse du Jeu Aviator</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Input Section -->
+            <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Entrez les Données</h2>
+                <form id="dataForm" class="space-y-4">
+                    <div>
+                        <label for="multipliers" class="block text-sm font-medium">Multiplicateurs (séparés par des virgules)</label>
+                        <input type="text" id="multipliers" class="mt-1 p-2 w-full rounded bg-white bg-opacity-20 text-white" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Analyser</button>
+                </form>
+            </div>
+
+            <!-- Result Section -->
+            <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4">Résultats de l'Analyse</h2>
+                <div id="results" class="space-y-4">
+                    <p class="text-lg"><span class="font-semibold">Multiplicateurs < 2.00:</span> <span id="lessThan2">0</span></p>
+                    <p class="text-lg"><span class="font-semibold">Multiplicateurs ≥ 2.00:</span> <span id="greaterThan2">0</span></p>
+                    <p class="text-lg"><span class="font-semibold">Probabilité < 2.00:</span> <span id="probLessThan2">0%</span></p>
+                    <p class="text-lg"><span class="font-semibold">Probabilité ≥ 2.00:</span> <span id="probGreaterThan2">0%</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="mt-8 bg-white bg-opacity-10 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">Graphique des Multiplicateurs</h2>
+            <div class="chart-container">
+                <canvas id="multiplierChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Strategy Section -->
+        <div class="mt-8 bg-white bg-opacity-10 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-4">Stratégie Recommandée</h2>
+            <p id="strategy" class="text-lg">Entrez des données pour obtenir une stratégie.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.getElementById('dataForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const multipliers = document.getElementById('multipliers').value.split(',').map(Number);
+            const lessThan2 = multipliers.filter(m => m < 2.00).length;
+            const greaterThan2 = multipliers.filter(m => m >= 2.00).length;
+            const total = multipliers.length;
+            
+            const probLessThan2 = ((lessThan2 / total) * 100).toFixed(2);
+            const probGreaterThan2 = ((greaterThan2 / total) * 100).toFixed(2);
+            
+            document.getElementById('lessThan2').textContent = lessThan2;
+            document.getElementById('greaterThan2').textContent = greaterThan2;
+            document.getElementById('probLessThan2').textContent = `${probLessThan2}%`;
+            document.getElementById('probGreaterThan2').textContent = `${probGreaterThan2}%`;
+            
+            updateChart(multipliers);
+            updateStrategy(probLessThan2, probGreaterThan2);
+        });
+
+        function updateChart(multipliers) {
+            const ctx = document.getElementById('multiplierChart').getContext('2d');
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+            window.myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: multipliers.map((_, i) => i + 1),
+                    datasets: [{
+                        label: 'Multiplicateurs',
+                        data: multipliers,
+                        borderColor: '#3b82f6',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStrategy(probLessThan2, probGreaterThan2) {
+            const strategyElement = document.getElementById('strategy');
+            if (probLessThan2 > 60) {
+                strategyElement.textContent = "Stratégie: Il est recommandé de miser sur des multiplicateurs inférieurs à 2.00, car ils apparaissent plus fréquemment.";
+            } else if (probGreaterThan2 > 40) {
+                strategyElement.textContent = "Stratégie: Il est recommandé de miser sur des multiplicateurs supérieurs ou égaux à 2.00, car ils ont une probabilité significative d'apparaître.";
+            } else {
+                strategyElement.textContent = "Stratégie: Les multiplicateurs sont équilibrés. Considérez une stratégie mixte.";
+            }
+        }
+    </script>
+</body>
+</html>
